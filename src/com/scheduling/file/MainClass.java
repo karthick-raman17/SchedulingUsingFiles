@@ -28,9 +28,9 @@ public class MainClass extends AbstractSchedulingSerialize {
 	Doctor ramanObject = new Doctor("2", "Raman", 14, 21, 4);
 	Doctor satyaObject = new Doctor("3", "Satya", 8, 17, 4);
 
-	Slots karthickSlot = new Slots(karthickObject.doctorID, karthickObject.startHour, karthickObject.endHour, karthickObject.duration);
-	Slots ramanSlot = new Slots(ramanObject.doctorID, ramanObject.startHour, ramanObject.endHour, ramanObject.duration);
-	Slots satyaSlot = new Slots(satyaObject.doctorID, satyaObject.startHour, satyaObject.endHour, satyaObject.duration);
+	Slots karthickSlot = new Slots(karthickObject.doctorID, karthickObject.startHour, karthickObject.endHour, karthickObject.slotsPerHour);
+	Slots ramanSlot = new Slots(ramanObject.doctorID, ramanObject.startHour, ramanObject.endHour, ramanObject.slotsPerHour);
+	Slots satyaSlot = new Slots(satyaObject.doctorID, satyaObject.startHour, satyaObject.endHour, satyaObject.slotsPerHour);
 
 	Consultation consultation1 = new Consultation("1", "Cardiologists", "15", "100$", staffList);
 	Consultation consultation2 = new Consultation("2", "Neurologists", "15", "100$", staffList);

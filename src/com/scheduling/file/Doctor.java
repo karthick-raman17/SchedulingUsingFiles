@@ -6,9 +6,9 @@ class Doctor implements java.io.Serializable {
 	int startHour;
 	int endHour;
 	String name;
-	int duration;
+	int slotsPerHour;
 	
-	public Doctor(String doctorID,String name, int startHour, int endHour, int duration) {
+	public Doctor(String doctorID,String name, int startHour, int endHour, int slotsPerHour) {
 
 		if ((endHour - startHour) > 24) {
 			return;
@@ -17,6 +17,6 @@ class Doctor implements java.io.Serializable {
 		this.name = name;
 		this.startHour = startHour;
 		this.endHour = endHour;
-		this.duration = duration;
+		this.slotsPerHour = slotsPerHour;
 	}
 }
