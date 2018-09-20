@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 class Slots implements java.io.Serializable {
 
-	private static final long serialVersionUID = -9007172145300329070L;
+	
 	ArrayList<Boolean> slots = new ArrayList<>();
 	ArrayList<String> slotsInString = new ArrayList<>();
 	int startHour;

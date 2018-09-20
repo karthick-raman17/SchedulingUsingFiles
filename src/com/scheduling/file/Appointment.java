@@ -9,8 +9,12 @@ class Appointment implements java.io.Serializable {
 	private String patientID;
 	
 	private String consultationID;
+	
+	private String apptointmentID;
 
-	public Appointment(String slotTime, String doctorID, String patientID, String consultationID) {	
+	public Appointment(String apptointmentID, String slotTime, String doctorID, String patientID, String consultationID) {	
+		
+		this.apptointmentID = apptointmentID;
 		this.slotTime = slotTime;
 		this.doctorID = doctorID;
 		this.patientID = patientID;
@@ -19,9 +23,11 @@ class Appointment implements java.io.Serializable {
 
 	@Override
 	public String toString() {
-		return "Appointment [slotTime=" + slotTime + ", doctorID=" + doctorID + ", patientID=" + patientID
-				+ ", consultationID=" + consultationID + "]";
+		return "Appointment [ apptointmentID=" + apptointmentID+ ", doctorID=" + doctorID + ", patientID=" + patientID
+				+ ", consultationID=" + consultationID + ", slotTime= " + slotTime + "]";
 	}
+
+	
 	
 	
 }

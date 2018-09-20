@@ -1,7 +1,9 @@
 package com.scheduling.file;
 
 import java.io.EOFException;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -9,6 +11,7 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 
 public class AbstractSchedulingSerialize implements SchedulingSerialize {
 	Patient pat;
@@ -20,22 +23,20 @@ public class AbstractSchedulingSerialize implements SchedulingSerialize {
 	String apptFilePath = "/Users/Shared/SchedulingFolder/Appointments.txt";
 
 	LinkedList<Patient> patientDeserializeObject = new LinkedList<>();
-	LinkedList<Patient> patientSerializeObject = new LinkedList<>();
+	List<Patient> patientSerializeObject = new LinkedList<>();
 	LinkedList<Appointment> apptSerializeObject = new LinkedList<>();
 	LinkedList<Appointment> apptDeserializeObject = new LinkedList<>();
 	HashMap<String, ArrayList<String>> staffSlotDeserializeList = new HashMap<>();
 	HashMap<String, ArrayList<String>> staffSlotList = new HashMap<>();
 
-	public void genSlots(String doctorID, ArrayList<String> slots) {
-		staffSlotList.put(doctorID, slots);
-	}
-
 	public void staffSerialize(LinkedList<Doctor> doctorList) {
 
 		try {
 
-			FileOutputStream file = new FileOutputStream(doctorFilePath);
+			File docFile = new File(doctorFilePath);
+			docFile.createNewFile();
 
+			FileOutputStream file = new FileOutputStream(docFile);
 			ObjectOutputStream out = new ObjectOutputStream(file);
 
 			out.writeObject(doctorList);
@@ -44,7 +45,7 @@ public class AbstractSchedulingSerialize implements SchedulingSerialize {
 
 			file.close();
 
-			System.out.println("Staff Object has been serialized");
+			System.out.println("Staff details stored");
 
 		} catch (IOException ex) {
 
@@ -55,25 +56,36 @@ public class AbstractSchedulingSerialize implements SchedulingSerialize {
 	}
 
 	public void patientSerialize(Patient patient) {
-
+		FileOutputStream file = null;
+		ObjectOutputStream out = null;
 		try {
 
-			FileOutputStream file = new FileOutputStream(patientFilePath);
+			File patientFile = new File(patientFilePath);
 
-			ObjectOutputStream out = new ObjectOutputStream(file);
-
-			if (patientDeserialize() != null) {
-				patientSerializeObject.addAll(patientDeserialize());
+			if (patientFile.createNewFile()) {
+				file = new FileOutputStream(patientFile);
+				out = new ObjectOutputStream(file);
 				patientSerializeObject.add(patient);
-			} else {
-				patientSerializeObject.add(patient);
+				out.writeObject(patientSerializeObject);
 			}
-			out.writeObject(patientSerializeObject);
-			out.close();
 
+			else {
+				file = new FileOutputStream(patientFile);
+				out = new ObjectOutputStream(file);
+
+				if (patientDeserialize() != null) {
+					patientSerializeObject.addAll(patientDeserialize());
+					patientSerializeObject.add(patient);
+				} else {
+					patientSerializeObject.add(patient);
+				}
+				out.writeObject(patientSerializeObject);
+			}
+
+			out.close();
 			file.close();
 
-			System.out.println("Patient Object has been serialized");
+			System.out.println("Patient details stored");
 
 		} catch (IOException ex) {
 
@@ -82,7 +94,6 @@ public class AbstractSchedulingSerialize implements SchedulingSerialize {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public LinkedList<Patient> patientDeserialize() {
 		try {
 
@@ -103,6 +114,7 @@ public class AbstractSchedulingSerialize implements SchedulingSerialize {
 			file.close();
 
 		} catch (EOFException ex) {
+		} catch (FileNotFoundException ex) {
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		} catch (ClassNotFoundException ex) {
@@ -115,24 +127,34 @@ public class AbstractSchedulingSerialize implements SchedulingSerialize {
 
 	public void slotSerialize(String doctorID, ArrayList<String> slot) {
 
+		FileOutputStream file = null;
+		ObjectOutputStream out = null;
 		try {
-		
-			FileOutputStream file = new FileOutputStream(slotFilePath);
 
-			ObjectOutputStream out = new ObjectOutputStream(file);
+			File slotFile = new File(slotFilePath);
 
-			if (slotDeserialize() != null) {
-				staffSlotList.putAll(slotDeserialize());
-				staffSlotList.put(doctorID, slot);
-			} else {
-				staffSlotList.put(doctorID, slot);
+			if (slotFile.createNewFile()) {
+				file = new FileOutputStream(slotFile);
+				out = new ObjectOutputStream(file);
+				// staffSlotList.put(doctorID, slot);
+
+				out.writeObject(staffSlotList);
 			}
-			out.writeObject(staffSlotList);
+
+			else {
+				file = new FileOutputStream(slotFile);
+				out = new ObjectOutputStream(file);
+				if (slotDeserialize() != null) {
+					staffSlotList.putAll(slotDeserialize());
+					staffSlotList.put(doctorID, slot);
+				} else {
+					staffSlotList.put(doctorID, slot);
+				}
+				out.writeObject(staffSlotList);
+			}
 			out.close();
 
 			file.close();
-
-			System.out.println("Slot Object has been serialized");
 
 		} catch (IOException ex) {
 
@@ -141,7 +163,6 @@ public class AbstractSchedulingSerialize implements SchedulingSerialize {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public HashMap<String, ArrayList<String>> slotDeserialize() {
 		try {
 
@@ -162,7 +183,9 @@ public class AbstractSchedulingSerialize implements SchedulingSerialize {
 			file.close();
 
 		} catch (EOFException ex) {
+		} catch (FileNotFoundException ex) {
 		} catch (IOException ex) {
+
 			ex.printStackTrace();
 		} catch (ClassNotFoundException ex) {
 			ex.printStackTrace();
@@ -172,26 +195,38 @@ public class AbstractSchedulingSerialize implements SchedulingSerialize {
 
 	}
 
-	public void appointmentSerialize(Appointment appt) {
+	public void appointmentSerialize(Appointment appointment) {
 
+		FileOutputStream file = null;
+		ObjectOutputStream out = null;
 		try {
 
-			FileOutputStream file = new FileOutputStream(apptFilePath, false);
+			File appointmentFile = new File(apptFilePath);
 
-			ObjectOutputStream out = new ObjectOutputStream(file);
-
-			if (appointmentDeserialize() != null) {
-				apptSerializeObject.addAll(appointmentDeserialize());
-				apptSerializeObject.add(appt);
-			} else {
-				apptSerializeObject.add(appt);
+			if (appointmentFile.createNewFile()) {
+				file = new FileOutputStream(appointmentFile);
+				out = new ObjectOutputStream(file);
+				apptSerializeObject.add(appointment);
+				out.writeObject(apptSerializeObject);
 			}
-			out.writeObject(apptSerializeObject);
+
+			else {
+				file = new FileOutputStream(appointmentFile);
+				out = new ObjectOutputStream(file);
+
+				if (patientDeserialize() != null) {
+					apptSerializeObject.addAll(appointmentDeserialize());
+					apptSerializeObject.add(appointment);
+				} else {
+					apptSerializeObject.add(appointment);
+				}
+				out.writeObject(apptSerializeObject);
+			}
 			out.close();
 
 			file.close();
 
-			System.out.println("Appt Object has been serialized");
+			System.out.println("Appointment details saved");
 
 		} catch (IOException ex) {
 
@@ -200,7 +235,6 @@ public class AbstractSchedulingSerialize implements SchedulingSerialize {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public LinkedList<Appointment> appointmentDeserialize() {
 		try {
 
@@ -221,6 +255,7 @@ public class AbstractSchedulingSerialize implements SchedulingSerialize {
 			file.close();
 
 		} catch (EOFException ex) {
+		} catch (FileNotFoundException ex) {
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		} catch (ClassNotFoundException ex) {

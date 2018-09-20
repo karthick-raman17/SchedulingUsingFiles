@@ -1,6 +1,6 @@
 package com.scheduling.file;
 
-
+import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Scanner;
@@ -10,7 +10,8 @@ public class MainClass extends AbstractSchedulingSerialize {
 	static Scanner scanObject = new Scanner(System.in);
 	String customerName;
 	String customerEmail;
-	String customerId;
+	String customerID;
+	String appointmentID;
 	int customerAge;
 
 	LinkedList<Doctor> currentService = new LinkedList<>();
@@ -27,7 +28,7 @@ public class MainClass extends AbstractSchedulingSerialize {
 	Doctor ramanObject = new Doctor("2", "Raman", 14, 21, 4);
 	Doctor satyaObject = new Doctor("3", "Satya", 8, 17, 4);
 
-	Slots karthickSlot = new Slots(karthickObject.doctorID, karthickObject.startHour, karthickObject.endHour,karthickObject.duration);
+	Slots karthickSlot = new Slots(karthickObject.doctorID, karthickObject.startHour, karthickObject.endHour, karthickObject.duration);
 	Slots ramanSlot = new Slots(ramanObject.doctorID, ramanObject.startHour, ramanObject.endHour, ramanObject.duration);
 	Slots satyaSlot = new Slots(satyaObject.doctorID, satyaObject.startHour, satyaObject.endHour, satyaObject.duration);
 
@@ -40,7 +41,7 @@ public class MainClass extends AbstractSchedulingSerialize {
 	public void addStaff() {
 		staffList.add(karthickObject);
 		staffList.add(ramanObject);
-		staffList.add(satyaObject); 
+		staffList.add(satyaObject);
 		staffSerialize(staffList);
 	}
 
@@ -50,6 +51,12 @@ public class MainClass extends AbstractSchedulingSerialize {
 		serviceList.add(consultation3);
 		serviceList.add(consultation4);
 		serviceList.add(consultation5);
+	}
+
+	public void genSlots() {
+		slotSerialize(karthickSlot.doctorID, karthickSlot.getAllSlotsInString());
+		slotSerialize(ramanSlot.doctorID, ramanSlot.getAllSlotsInString());
+		slotSerialize(satyaSlot.doctorID, satyaSlot.getAllSlotsInString());
 	}
 
 	public void displayService() {
@@ -69,10 +76,13 @@ public class MainClass extends AbstractSchedulingSerialize {
 
 	public void displayAvailableSlots(int selectedDoctor) {
 		slots = slotDeserialize().get(currentService.get(selectedDoctor - 1).doctorID);
+		if (slots == null) {
+			genSlots();
+			slots = slotDeserialize().get(currentService.get(selectedDoctor - 1).doctorID);
+		}
 		for (int i = 0; i < slots.size(); i++) {
 			System.out.println(i + 1 + "->" + slots.get(i));
 		}
-
 	}
 
 	public void schedule(int selectedDoctor, int selectedSlot, int selectedConsultation) {
@@ -84,17 +94,22 @@ public class MainClass extends AbstractSchedulingSerialize {
 		customerEmail = scanObject.next();
 		System.out.print("Age: ");
 		customerAge = scanObject.nextInt();
-		customerId = generateUUID();
-		Patient patient = new Patient(customerId, customerName, customerEmail, customerAge);
-
+		customerID = generateUUID();
+		Patient patient = new Patient(customerID, customerName, customerEmail, customerAge);
+		patientDeserialize();
 		patientSerialize(patient);
 
 		System.out.println("Slot booked sucessfully!!");
-		Appointment appt = new Appointment(slots.remove(selectedSlot - 1), Integer.toString(selectedDoctor), customerId,
-				Integer.toString(selectedConsultation));
+
+		appointmentID = generateUUID();
+		Appointment appt = new Appointment(appointmentID, slots.remove(selectedSlot - 1),
+				Integer.toString(selectedDoctor), customerID, Integer.toString(selectedConsultation));
+		appointmentDeserialize();
 		appointmentSerialize(appt);
 		slotSerialize(Integer.toString(selectedDoctor), slots);
+
 		System.out.println(appointmentDeserialize());
+		System.out.println(patientDeserialize());
 
 	}
 
@@ -105,7 +120,7 @@ public class MainClass extends AbstractSchedulingSerialize {
 		int chooseSlot;
 
 		MainClass mainClassObject = new MainClass();
-		System.out.println(mainClassObject.patientDeserialize());
+
 		mainClassObject.addStaff();
 
 		mainClassObject.addConsultation();
@@ -136,6 +151,17 @@ public class MainClass extends AbstractSchedulingSerialize {
 		UUID uuid = UUID.randomUUID();
 		String randomUUIDString = uuid.toString();
 		return randomUUIDString;
+	}
+
+	static {
+		File schedulingDirectory = new File("/Users/Shared/SchedulingFolder");
+
+		try {
+			schedulingDirectory.mkdir();
+		} catch (SecurityException SecExp) {
+			System.out.println("Error while creating directory :" + SecExp);
+		}
+
 	}
 
 }

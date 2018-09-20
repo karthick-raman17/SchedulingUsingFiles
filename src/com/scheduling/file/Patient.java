@@ -1,9 +1,6 @@
 package com.scheduling.file;
 
 class Patient implements java.io.Serializable {
-
-	private static final long serialVersionUID = 5041922734409294452L;
-
 	private String id;
 	private int age;
 	private String name;
