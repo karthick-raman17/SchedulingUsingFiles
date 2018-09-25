@@ -3,11 +3,8 @@ package com.scheduling.file;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
 
@@ -208,8 +205,8 @@ public class MainClass extends AbstractSchedulingSerialize {
 				selectedDoctor = doctorListFromSelectedConsultation.get(i);
 			}
 		}
-		//System.out.println(selectedDoctor);
 		getAllDoctorsSlotsFromFile();
+	
 
 		slots = doctorSlotList.get(selectedDoctor);
 
@@ -247,7 +244,7 @@ public class MainClass extends AbstractSchedulingSerialize {
 		}
 
 		System.out.println("Slot booked sucessfully!!");
-
+		System.out.println("Your contact Id :"+patientId +" "+"Appointment Id: "+appointmentId);
 		doctorSlotSerialize(doctorSlotList);
 	}
 
@@ -281,7 +278,7 @@ public class MainClass extends AbstractSchedulingSerialize {
 		int choice;
 
 		do {
-			System.out.println("\n1.Create Staff\n2.Update Staff\n3.Delete Staff\n4.Reports Menu\n5.Back to main menu");
+			System.out.println("\n1.Create Staff\n2.Delete Staff\n3.Reports Menu\n4.Back to main menu");
 			choice = scanObject.nextInt();
 			int selectedConsultationIndex;
 			String doctorName;
@@ -337,32 +334,70 @@ public class MainClass extends AbstractSchedulingSerialize {
 					}
 
 				}
-				Doctor newDoctorObject = new Doctor("S" + generateUUID().substring(0, 10), doctorName, startHour,
-						endHour, slotsPerHour, localAssignConsult);
+				String doctorId = "S" + generateUUID().substring(0, 10);
+				Doctor newDoctorObject = new Doctor(doctorId, doctorName, startHour, endHour, slotsPerHour,
+						localAssignConsult);
 				LinkedList<Doctor> localDoctorsList = new LinkedList<>();
 				localDoctorsList.addAll(getAllDoctorsFromFile());
-			//	System.out.println(doctorList);
-				localDoctorsList.add(newDoctorObject);
 				
-//				System.out.println("Updated List "+localDoctorsList);
-				doctorSerialize(localDoctorsList);
+				localDoctorsList.add(newDoctorObject);
 
+				LinkedList<String> doctorFromFile = new LinkedList<>();
+				for (int acIndex = 0; acIndex < localAssignConsult.size(); acIndex++) {
+					for (int allCIndex = 0; allCIndex < consultationList.size(); allCIndex++) {
+						if (localAssignConsult.get(acIndex).equals(consultationList.get(allCIndex).id)) {
+							doctorFromFile.addAll(consultationList.get(allCIndex).getAssingedDoctors());
+							doctorFromFile.add(doctorId);
+							consultationList.get(allCIndex).setAssingedDoctors(doctorFromFile);
+
+						}
+					}
+				}
+
+				Slot newDoctorSlot = new Slot(doctorId, startHour, endHour, slotsPerHour);
+				HashMap<String, ArrayList<String>> localDoctorSlotList = new HashMap<>();
+				localDoctorSlotList.putAll(getAllDoctorsSlotsFromFile());
+				
+				localDoctorSlotList.put(newDoctorSlot.doctorID, newDoctorSlot.getAllSlotsInString());
+
+
+				doctorSlotSerialize(localDoctorSlotList);
+				consultationSerialize(consultationList);
+				doctorSerialize(localDoctorsList);
+				System.out.println(doctorName+" staff is created Sucessfully");
+				System.out.println(doctorName+" staff ID :"+doctorId);
 				break;
 			case 2:
-				System.out.println("Update Staff");
-				
-				break;
-			case 3:
 				String staffDelete;
 				System.out.println("\nChoose the staff to delete:");
 				for (Doctor d : doctorDeserialize()) {
 					System.out.println(d.id + " " + d.name);
 				}
-				// staffDelete = scanObject.next();
-
-			case 4:
+				staffDelete = scanObject.next();
+				getAllDoctorsFromFile();
+				for(int i = 0; i< doctorList.size();i++) {
+					if(doctorList.get(i).id.equals(staffDelete)) {
+						doctorList.remove(i);
+						System.out.println("Staff Removed");
+					}
+				}
+				doctorSerialize(doctorList);
+				getAllConsultationsFromFile();
+				for(int i = 0 ; i < consultationList.size();i++) {
+					LinkedList<String> st = new LinkedList<>();
+					st.addAll(consultationList.get(i).getAssingedDoctors());
+					for(int j = 0;  j < st.size(); j ++) {
+						if(st.get(j).equals(staffDelete)) {
+							st.remove();
+							consultationList.get(i).setAssingedDoctors(st);
+						}
+					}
+				}
+				consultationSerialize(consultationList);
+				break; 
+			case 3:
 				adminReports();
-			case 5:
+			case 4:
 				return;
 			}
 		} while (choice >= 1 || choice <= 4);
@@ -374,20 +409,16 @@ public class MainClass extends AbstractSchedulingSerialize {
 
 		LinkedList<Patient> patients = new LinkedList<>();
 		patients.addAll(getAllPatientsFromFile());
-		// System.out.println(patients);
-
+		
 		LinkedList<Doctor> doctors = new LinkedList<>();
 		doctors.addAll(getAllDoctorsFromFile());
-		System.out.println(doctors.size());
-		// System.out.println(doctors);
+		
 		LinkedList<Consultation> consultations = new LinkedList<>();
 		consultations.addAll(getAllConsultationsFromFile());
-		// System.out.println(consultations);
-
+		
 		LinkedList<Appointment> appointments = new LinkedList<>();
 		appointments.addAll(getAllAppointmentsFromFile());
 
-		//System.out.println(appointments);
 		int choice;
 		do {
 			System.out.println("\n1.Staff \n2.Patient \n3.Appointment \n4.Go back to main menu\n");
@@ -450,7 +481,7 @@ public class MainClass extends AbstractSchedulingSerialize {
 				for (int j = 0; j < appointments.size(); j++) {
 
 					for (Patient p : patients) {
-						System.out.println(appointments.get(j).getPatientID());
+						
 						if (p.getId().equals(appointments.get(j).getPatientID())) {
 
 							patientName = p.getName() + ", " + p.getEmail();
@@ -466,11 +497,11 @@ public class MainClass extends AbstractSchedulingSerialize {
 							consultationName = c.getName();
 						}
 					}
-					String[] temp = { appointments.get(j).getSlotTime(), consultationName, doctorName, patientName, appointments.get(j).getAppointmentCost() };
+					String[] temp = { appointments.get(j).getSlotTime(), consultationName, doctorName, patientName,
+							appointments.get(j).getAppointmentCost() };
 					appointmentrows.add(temp);
 				}
-				TextTable appointmentTable = new TextTable(appointmentColumn,
-						appointmentrows.toArray(new String[0][0]));
+				TextTable appointmentTable = new TextTable(appointmentColumn,appointmentrows.toArray(new String[0][0]));
 
 				appointmentTable.printTable();
 				appointmentrows.clear();

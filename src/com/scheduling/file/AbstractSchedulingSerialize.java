@@ -55,7 +55,7 @@ public class AbstractSchedulingSerialize implements SchedulingSerialize {
 				doctorSerializeObject.addAll(doctorList);
 			}
 			out.writeObject(doctorSerializeObject);
-			System.out.println("Staff details stored");
+			//System.out.println("Staff details stored");
 			out.close();
 			file.close();
 		} catch (IOException ex) {
@@ -100,7 +100,7 @@ public class AbstractSchedulingSerialize implements SchedulingSerialize {
 	public void consultationSerialize(LinkedList<Consultation> consultationList) {
 
 		try {
-
+			consultationSerializeObject.clear();
 			FileOutputStream file = new FileOutputStream(consultationFilePath);
 			ObjectOutputStream out = new ObjectOutputStream(file);
 
@@ -124,10 +124,10 @@ public class AbstractSchedulingSerialize implements SchedulingSerialize {
 
 	public LinkedList<Consultation> consultationDeserialize() {
 		try {
-
+			consultationDeserializeObject.clear();
 			FileInputStream file = new FileInputStream(consultationFilePath);
 			ObjectInputStream out = new ObjectInputStream(file);
-			consultationDeserializeObject.clear();
+			
 			boolean cont = true;
 			while (cont) {
 				consultationDeserializeObject = (LinkedList<Consultation>) out.readObject();
@@ -167,7 +167,7 @@ public class AbstractSchedulingSerialize implements SchedulingSerialize {
 			out.writeObject(patientSerializeObject);
 			out.close();
 			file.close();
-			System.out.println("Patient details stored");
+			//System.out.println("Patient details stored");
 		} catch (IOException ex) {
 
 			System.out.println("IOException is caught when writing");
@@ -177,7 +177,7 @@ public class AbstractSchedulingSerialize implements SchedulingSerialize {
 
 	public LinkedList<Patient> patientDeserialize() {
 		try {
-
+			patientDeserializeObject.clear();
 			FileInputStream file = new FileInputStream(patientFilePath);
 
 			ObjectInputStream out = new ObjectInputStream(file);
@@ -206,47 +206,10 @@ public class AbstractSchedulingSerialize implements SchedulingSerialize {
 
 	}
 
-	// public void slotSerialize(String doctorID, ArrayList<String> slot) {
-	//
-	// FileOutputStream file = null;
-	// ObjectOutputStream out = null;
-	// try {
-	//
-	// File slotFile = new File(slotFilePath);
-	//
-	// if (slotFile.createNewFile()) {
-	// file = new FileOutputStream(slotFile);
-	// out = new ObjectOutputStream(file);
-	// // doctorSlotList.put(doctorID, slot);
-	//
-	// out.writeObject(doctorSlotList);
-	// }
-	//
-	// else {
-	// file = new FileOutputStream(slotFile);
-	// out = new ObjectOutputStream(file);
-	// if (slotDeserialize() != null) {
-	// doctorSlotList.putAll(slotDeserialize());
-	// doctorSlotList.put(doctorID, slot);
-	// } else {
-	// doctorSlotList.put(doctorID, slot);
-	// }
-	// out.writeObject(doctorSlotList);
-	// }
-	// out.close();
-	// file.close();
-	//
-	// } catch (IOException ex) {
-	//
-	// System.out.println("IOException is caught when writing");
-	//
-	// }
-	// }
-
 	public void doctorSlotSerialize(HashMap<String, ArrayList<String>> doctorSlotList) {
 
 		try {
-
+		
 			FileOutputStream file = new FileOutputStream(slotFilePath,false);
 			ObjectOutputStream out = new ObjectOutputStream(file);
 
@@ -272,7 +235,7 @@ public class AbstractSchedulingSerialize implements SchedulingSerialize {
 
 	public HashMap<String, ArrayList<String>> doctorSlotDeserialize() {
 		try {
-
+			
 			FileInputStream file = new FileInputStream(slotFilePath);
 
 			ObjectInputStream out = new ObjectInputStream(file);
@@ -305,6 +268,7 @@ public class AbstractSchedulingSerialize implements SchedulingSerialize {
 	public void appointmentSerialize(LinkedList<Appointment> appointmentList) {
 
 		try {
+			apptSerializeObject.clear();
 			FileOutputStream file = new FileOutputStream(appointmentFilePath,false);
 			ObjectOutputStream out = new ObjectOutputStream(file);
 
@@ -329,7 +293,7 @@ public class AbstractSchedulingSerialize implements SchedulingSerialize {
 
 	public LinkedList<Appointment> appointmentDeserialize() {
 		try {
-
+			apptListFromFile.clear();
 			FileInputStream file = new FileInputStream(appointmentFilePath);
 			ObjectInputStream out = new ObjectInputStream(file);
 
@@ -342,7 +306,6 @@ public class AbstractSchedulingSerialize implements SchedulingSerialize {
 					cont = false;
 			}
 			out.close();
-
 			file.close();
 
 		} catch (EOFException ex) {
