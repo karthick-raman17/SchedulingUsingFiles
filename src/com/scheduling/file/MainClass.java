@@ -1,149 +1,485 @@
 package com.scheduling.file;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
 
+import dnl.utils.text.table.TextTable;
+
 public class MainClass extends AbstractSchedulingSerialize {
 	static Scanner scanObject = new Scanner(System.in);
-	String customerName;
-	String customerEmail;
-	String customerID;
-	String appointmentID;
-	int customerAge;
 
-	LinkedList<Doctor> currentService = new LinkedList<>();
-
-	LinkedList<Doctor> staffList = new LinkedList<>();
-
+	LinkedList<Doctor> doctorList = new LinkedList<>();
 	LinkedList<Patient> patientList = new LinkedList<>();
-
-	ArrayList<Consultation> serviceList = new ArrayList<>();
-
+	LinkedList<Consultation> consultationList = new LinkedList<>();
+	LinkedList<Appointment> appointmentList = new LinkedList<>();
+	LinkedList<String> assignedServices = new LinkedList<>();
+	LinkedList<String> assignedStaffs = new LinkedList<>();
+	HashMap<String, ArrayList<String>> doctorSlotList = new HashMap<>();
 	ArrayList<String> slots = new ArrayList<>();
 
-	Doctor karthickObject = new Doctor("1", "Karthick", 7, 14, 4);
-	Doctor ramanObject = new Doctor("2", "Raman", 14, 21, 4);
-	Doctor satyaObject = new Doctor("3", "Satya", 8, 17, 4);
+	private void initializeSetup() throws IOException {
+		String doctorFilePath = "/Users/Shared/SchedulingFolder/Doctor.txt";
+		String slotFilePath = "/Users/Shared/SchedulingFolder/Slots.txt";
+		String consultationFilePath = "/Users/Shared/SchedulingFolder/Consultation.txt";
+		File doctorFile = new File(doctorFilePath);
+		File consultationFile = new File(consultationFilePath);
+		File slotFile = new File(slotFilePath);
 
-	Slots karthickSlot = new Slots(karthickObject.doctorID, karthickObject.startHour, karthickObject.endHour, karthickObject.slotsPerHour);
-	Slots ramanSlot = new Slots(ramanObject.doctorID, ramanObject.startHour, ramanObject.endHour, ramanObject.slotsPerHour);
-	Slots satyaSlot = new Slots(satyaObject.doctorID, satyaObject.startHour, satyaObject.endHour, satyaObject.slotsPerHour);
+		Doctor karthickObject = new Doctor("S" + generateUUID().substring(0, 10), "Karthick", 7, 14, 4, null);
+		Doctor ramanObject = new Doctor("S" + generateUUID().substring(0, 10), "Raman", 14, 21, 4, null);
+		Doctor satyaObject = new Doctor("S" + generateUUID().substring(0, 10), "Satya", 8, 17, 4, null);
 
-	Consultation consultation1 = new Consultation("1", "Cardiologists", "15", "100$", staffList);
-	Consultation consultation2 = new Consultation("2", "Neurologists", "15", "100$", staffList);
-	Consultation consultation3 = new Consultation("3", "Orthopaedic", "15", "100$", staffList);
-	Consultation consultation4 = new Consultation("4", "ENT", "15", "100$", staffList);
-	Consultation consultation5 = new Consultation("5", "Skin specialists", "15", "100$", staffList);
+		assignedStaffs.add(karthickObject.id);
+		assignedStaffs.add(ramanObject.id);
+		assignedStaffs.add(satyaObject.id);
 
-	public void addStaff() {
-		staffList.add(karthickObject);
-		staffList.add(ramanObject);
-		staffList.add(satyaObject);
-		staffSerialize(staffList);
+		Consultation cardiologists = new Consultation("C" + generateUUID().substring(0, 8), "Cardiologists", "15",
+				"100$", assignedStaffs);
+		Consultation neurologists = new Consultation("C" + generateUUID().substring(0, 8), "Neurologists", "15", "100$",
+				assignedStaffs);
+		Consultation orthopaedic = new Consultation("C" + generateUUID().substring(0, 8), "Orthopaedic", "15", "100$",
+				assignedStaffs);
+		Consultation ENT = new Consultation("C" + generateUUID().substring(0, 8), "ENT", "15", "100$", assignedStaffs);
+		Consultation skinSpecialists = new Consultation("C" + generateUUID().substring(0, 8), "Skin specialists", "15",
+				"100$", assignedStaffs);
+
+		assignedServices.add(cardiologists.id);
+		assignedServices.add(neurologists.id);
+		assignedServices.add(orthopaedic.id);
+		assignedServices.add(ENT.id);
+		assignedServices.add(skinSpecialists.id);
+
+		// Initial assigning service for the default staffs
+		karthickObject.setAssignedConsultation(assignedServices);
+		ramanObject.setAssignedConsultation(assignedServices);
+		satyaObject.setAssignedConsultation(assignedServices);
+
+		doctorList.add(karthickObject);
+		doctorList.add(ramanObject);
+		doctorList.add(satyaObject);
+
+		consultationList.add(cardiologists);
+		consultationList.add(neurologists);
+		consultationList.add(orthopaedic);
+		consultationList.add(ENT);
+		consultationList.add(skinSpecialists);
+
+		if (doctorFile.createNewFile()) {
+			doctorSerialize(doctorList);
+		}
+
+		if (consultationFile.createNewFile()) {
+			consultationSerialize(consultationList);
+		}
+
+		Slot karthickSlot = new Slot(karthickObject.id, karthickObject.startHour, karthickObject.endHour,
+				karthickObject.slotsPerHour);
+		Slot ramanSlot = new Slot(ramanObject.id, ramanObject.startHour, ramanObject.endHour, ramanObject.slotsPerHour);
+		Slot satyaSlot = new Slot(satyaObject.id, satyaObject.startHour, satyaObject.endHour, satyaObject.slotsPerHour);
+
+		doctorSlotList.put(karthickSlot.doctorID, karthickSlot.getAllSlotsInString());
+		doctorSlotList.put(ramanSlot.doctorID, ramanSlot.getAllSlotsInString());
+		doctorSlotList.put(satyaSlot.doctorID, satyaSlot.getAllSlotsInString());
+
+		if (slotFile.createNewFile()) {
+			doctorSlotSerialize(doctorSlotList);
+		}
+
 	}
 
-	public void addConsultation() {
-		serviceList.add(consultation1);
-		serviceList.add(consultation2);
-		serviceList.add(consultation3);
-		serviceList.add(consultation4);
-		serviceList.add(consultation5);
+	private LinkedList<Consultation> getAllConsultationsFromFile() {
+
+		if (!consultationDeserialize().isEmpty()) {
+			consultationList.clear();
+			consultationList.addAll(consultationDeserialize());
+		} else {
+			consultationList.addAll(consultationDeserialize());
+		}
+		return consultationList;
 	}
 
-	public void genSlots() {
-		slotSerialize(karthickSlot.doctorID, karthickSlot.getAllSlotsInString());
-		slotSerialize(ramanSlot.doctorID, ramanSlot.getAllSlotsInString());
-		slotSerialize(satyaSlot.doctorID, satyaSlot.getAllSlotsInString());
+	private LinkedList<Doctor> getAllDoctorsFromFile() {
+
+		if (!doctorDeserialize().isEmpty()) {
+			doctorList.clear();
+			doctorList.addAll(doctorDeserialize());
+		} else {
+			doctorList.addAll(doctorDeserialize());
+		}
+
+		return doctorList;
 	}
 
-	public void displayService() {
+	private HashMap<String, ArrayList<String>> getAllDoctorsSlotsFromFile() {
+		if (!doctorSlotDeserialize().isEmpty()) {
+			doctorSlotList.clear();
+			doctorSlotList.putAll(doctorSlotDeserialize());
+		} else {
+			doctorSlotList.putAll(doctorSlotDeserialize());
+		}
+		return doctorSlotList;
+	}
+
+	private LinkedList<Patient> getAllPatientsFromFile() {
+		if (!patientDeserialize().isEmpty()) {
+			patientList.clear();
+			patientList.addAll(patientDeserialize());
+		} else {
+			patientList.addAll(patientDeserialize());
+		}
+		return patientList;
+	}
+
+	private LinkedList<Appointment> getAllAppointmentsFromFile() {
+
+		if (!appointmentDeserialize().isEmpty()) {
+			appointmentList.clear();
+			appointmentList.addAll(appointmentDeserialize());
+		} else {
+			appointmentList.addAll(appointmentDeserialize());
+		}
+		return appointmentList;
+
+	}
+
+	private void BookingPage() {
+		String patientName;
+		String patientEmail;
+		String patientId;
+		String appointmentId;
+		int patientAge;
+
+		int selectedConsultationIndex;
+		int selectedDoctorIndex;
+		int selectedSlot;
+
+		getAllConsultationsFromFile();
+
 		System.out.println("\nAvailable Consultations:\n");
-		for (int serviceIndex = 0; serviceIndex < serviceList.size(); serviceIndex++) {
-			System.out.println(serviceIndex + 1 + ". " + serviceList.get(serviceIndex).getName());
+		for (int cIndex = 0; cIndex < consultationList.size(); cIndex++) {
+			System.out.println(cIndex + 1 + ". " + consultationList.get(cIndex).getName());
 		}
-	}
-
-	public void displayDoctor(int selectedConsultation) {
-		currentService = serviceList.get(selectedConsultation - 1).getStaffList();
-		System.out.println("\nAvailable Doctors:\n");
-		for (int staffIndex = 0; staffIndex < currentService.size(); staffIndex++) {
-			System.out.println(staffIndex + 1 + "." + currentService.get(staffIndex).name);
-		}
-	}
-
-	public void displayAvailableSlots(int selectedDoctor) {
-		slots = slotDeserialize().get(currentService.get(selectedDoctor - 1).doctorID);
-		if (slots == null) {
-			genSlots();
-			slots = slotDeserialize().get(currentService.get(selectedDoctor - 1).doctorID);
-		}
-		for (int i = 0; i < slots.size(); i++) {
-			System.out.println(i + 1 + "->" + slots.get(i));
-		}
-	}
-
-	public void schedule(int selectedDoctor, int selectedSlot, int selectedConsultation) {
-
-		System.out.println("Provide your informations:\n");
-		System.out.print("Name :");
-		customerName = scanObject.next();
-		System.out.print("Email: ");
-		customerEmail = scanObject.next();
-		System.out.print("Age: ");
-		customerAge = scanObject.nextInt();
-		customerID = generateUUID();
-		Patient patient = new Patient(customerID, customerName, customerEmail, customerAge);
-		patientDeserialize();
-		patientSerialize(patient);
-
-		System.out.println("Slot booked sucessfully!!");
-
-		appointmentID = generateUUID();
-		Appointment appt = new Appointment(appointmentID, slots.remove(selectedSlot - 1),
-				Integer.toString(selectedDoctor), customerID, Integer.toString(selectedConsultation));
-		appointmentDeserialize();
-		appointmentSerialize(appt);
-		slotSerialize(Integer.toString(selectedDoctor), slots);
-
-		System.out.println(appointmentDeserialize());
-		System.out.println(patientDeserialize());
-
-	}
-
-	public static void main(String[] args) {
-
-		int chooseConsultation;
-		int chooseDoctor;
-		int chooseSlot;
-
-		MainClass mainClassObject = new MainClass();
-
-		mainClassObject.addStaff();
-
-		mainClassObject.addConsultation();
-
-		mainClassObject.displayService();
 
 		System.out.println("\nSelect the consultation:");
 
-		chooseConsultation = scanObject.nextInt();
+		selectedConsultationIndex = scanObject.nextInt();
 
-		mainClassObject.displayDoctor(chooseConsultation);
+		LinkedList<String> doctorListFromSelectedConsultation = new LinkedList<>();
+		doctorListFromSelectedConsultation = consultationList.get(selectedConsultationIndex - 1).getAssingedDoctors();
+
+		String selectedConsultation = "";
+		for (int i = 0; i < consultationList.size(); i++) {
+			if ((selectedConsultationIndex - 1) == i) {
+				selectedConsultation = consultationList.get(i).id;
+			}
+		}
+
+		System.out.println("\nAvailable Doctors:\n");
+
+		getAllDoctorsFromFile();
+
+		for (int adIndex = 0; adIndex < doctorListFromSelectedConsultation.size(); adIndex++) {
+
+			for (int dIndex = 0; dIndex < doctorList.size(); dIndex++) {
+
+				if (doctorListFromSelectedConsultation.get(adIndex).equals(doctorList.get(dIndex).id)) {
+					System.out.println(adIndex + 1 + "." + doctorList.get(dIndex).name);
+				}
+			}
+			// System.out.println(sIndex + 1 + "." + staffList.get(sIndex).name);
+		}
 
 		System.out.println("\n Select the doctor:");
 
-		chooseDoctor = scanObject.nextInt();
+		selectedDoctorIndex = scanObject.nextInt();
 
-		mainClassObject.displayAvailableSlots(chooseDoctor);
+		String selectedDoctor = "";
+
+		for (int i = 0; i < doctorListFromSelectedConsultation.size(); i++) {
+			if ((selectedDoctorIndex - 1) == i) {
+				selectedDoctor = doctorListFromSelectedConsultation.get(i);
+			}
+		}
+		//System.out.println(selectedDoctor);
+		getAllDoctorsSlotsFromFile();
+
+		slots = doctorSlotList.get(selectedDoctor);
+
+		for (int i = 0; i < slots.size(); i++) {
+			System.out.println(i + 1 + "->" + slots.get(i));
+		}
 
 		System.out.println("\n Select the slot:");
 
-		chooseSlot = scanObject.nextInt();
+		selectedSlot = scanObject.nextInt();
 
-		mainClassObject.schedule(chooseDoctor, chooseSlot, chooseConsultation);
+		System.out.println("Provide your informations:\n");
+		System.out.print("Name :");
+		patientName = scanObject.next();
+		System.out.print("Email: ");
+		patientEmail = scanObject.next();
+		System.out.print("Age: ");
+		patientAge = scanObject.nextInt();
+		patientId = "cus" + generateUUID().substring(0, 14);
+		Patient patient = new Patient(patientId, patientName, patientEmail, patientAge);
+
+		getAllPatientsFromFile();
+		patientList.add(patient);
+		patientSerialize(patientList);
+
+		appointmentId = "appt" + generateUUID().substring(0, 8);
+		try {
+			Appointment appt = new Appointment(appointmentId, selectedDoctor, selectedConsultation, patientId,
+					slots.remove(selectedSlot - 1), "100");
+			getAllAppointmentsFromFile();
+			appointmentList.add(appt);
+			appointmentSerialize(appointmentList);
+		} catch (IndexOutOfBoundsException ex) {
+			System.out.println("Slot is not available");
+		}
+
+		System.out.println("Slot booked sucessfully!!");
+
+		doctorSlotSerialize(doctorSlotList);
+	}
+
+	public static void main(String[] args) throws IOException {
+
+		int choice;
+
+		MainClass mainClassObject = new MainClass();
+		mainClassObject.initializeSetup();
+
+		do {
+			System.out.println("\nLogin as: \n1.Admin\n2.User");
+			choice = scanObject.nextInt();
+
+			switch (choice) {
+			case 1:
+				mainClassObject.admin();
+				break;
+			case 2:
+				mainClassObject.BookingPage();
+				break;
+			}
+		} while (choice >= 1 || choice <= 2);
+
+	}
+
+	private void admin() {
+
+		System.out.println("Admin Profile");
+
+		int choice;
+
+		do {
+			System.out.println("\n1.Create Staff\n2.Update Staff\n3.Delete Staff\n4.Reports Menu\n5.Back to main menu");
+			choice = scanObject.nextInt();
+			int selectedConsultationIndex;
+			String doctorName;
+			int startHour;
+			int endHour;
+			int slotsPerHour;
+			int decision;
+			boolean flag = true;
+			switch (choice) {
+			case 1:
+				System.out.println("Enter the staff name");
+				doctorName = scanObject.next();
+				System.out.println("Enter the startHour");
+				startHour = scanObject.nextInt();
+				System.out.println("Enter the endHour");
+				endHour = scanObject.nextInt();
+				System.out.println("Enter the number of slots per hour");
+				slotsPerHour = scanObject.nextInt();
+				getAllConsultationsFromFile();
+				LinkedList<Consultation> localConsultObj = new LinkedList<>();
+				LinkedList<String> localAssignConsult = new LinkedList<>();
+				if (!localConsultObj.isEmpty()) {
+					localConsultObj.clear();
+					localConsultObj.addAll(consultationList);
+				} else {
+					localConsultObj.addAll(consultationList);
+				}
+
+				while (flag == true) {
+					System.out.println("Choose the services to assign");
+					for (int cIndex = 0; cIndex < localConsultObj.size(); cIndex++) {
+						System.out.println(cIndex + 1 + ". " + localConsultObj.get(cIndex).getName());
+					}
+
+					System.out.println("\nSelect the consultation:");
+
+					selectedConsultationIndex = scanObject.nextInt();
+
+					String selectedConsultation = "";
+
+					for (int i = 0; i < localConsultObj.size(); i++) {
+						if ((selectedConsultationIndex - 1) == i) {
+							selectedConsultation = localConsultObj.get(i).id;
+							localAssignConsult.add(localConsultObj.get(i).getId());
+							localConsultObj.remove(i);
+						}
+					}
+
+					System.out.println("Do you want assign another services?:\n1.YES \n2.NO");
+					decision = scanObject.nextInt();
+					if (decision != 1) {
+						flag = false;
+					}
+
+				}
+				Doctor newDoctorObject = new Doctor("S" + generateUUID().substring(0, 10), doctorName, startHour,
+						endHour, slotsPerHour, localAssignConsult);
+				LinkedList<Doctor> localDoctorsList = new LinkedList<>();
+				localDoctorsList.addAll(getAllDoctorsFromFile());
+			//	System.out.println(doctorList);
+				localDoctorsList.add(newDoctorObject);
+				
+//				System.out.println("Updated List "+localDoctorsList);
+				doctorSerialize(localDoctorsList);
+
+				break;
+			case 2:
+				System.out.println("Update Staff");
+				
+				break;
+			case 3:
+				String staffDelete;
+				System.out.println("\nChoose the staff to delete:");
+				for (Doctor d : doctorDeserialize()) {
+					System.out.println(d.id + " " + d.name);
+				}
+				// staffDelete = scanObject.next();
+
+			case 4:
+				adminReports();
+			case 5:
+				return;
+			}
+		} while (choice >= 1 || choice <= 4);
+
+	}
+
+	private void adminReports() {
+		System.out.println("\nReports for : ");
+
+		LinkedList<Patient> patients = new LinkedList<>();
+		patients.addAll(getAllPatientsFromFile());
+		// System.out.println(patients);
+
+		LinkedList<Doctor> doctors = new LinkedList<>();
+		doctors.addAll(getAllDoctorsFromFile());
+		System.out.println(doctors.size());
+		// System.out.println(doctors);
+		LinkedList<Consultation> consultations = new LinkedList<>();
+		consultations.addAll(getAllConsultationsFromFile());
+		// System.out.println(consultations);
+
+		LinkedList<Appointment> appointments = new LinkedList<>();
+		appointments.addAll(getAllAppointmentsFromFile());
+
+		//System.out.println(appointments);
+		int choice;
+		do {
+			System.out.println("\n1.Staff \n2.Patient \n3.Appointment \n4.Go back to main menu\n");
+			choice = scanObject.nextInt();
+
+			switch (choice) {
+			case 1:
+				System.out.println("\nDoctor details");
+				ArrayList<String[]> doctorRows = new ArrayList<String[]>();
+				for (int j = 0; j < doctors.size(); j++) {
+
+					LinkedList<String> localacListdoctors = new LinkedList<>();
+					localacListdoctors.addAll(doctors.get(j).getAssignedConsultation());
+					String assignedServices = "";
+					for (int c = 0; c < localacListdoctors.size(); c++) {
+						for (int cl = 0; cl < consultations.size(); cl++) {
+							if (localacListdoctors.get(c).equals(consultations.get(cl).id)) {
+								if (c == 0) {
+									assignedServices += consultations.get(cl).name;
+								} else {
+									assignedServices += ", " + consultations.get(cl).name;
+								}
+							}
+						}
+					}
+
+					String[] temp = { doctors.get(j).getName(), Integer.toString(doctors.get(j).getStartHour()),
+							Integer.toString(doctors.get(j).getEndHour()), assignedServices };
+					doctorRows.add(temp);
+				}
+				String[] doctorColumn = { "Name", "StartHour", "EndHour", "Assigned Consultations" };
+				TextTable doctorTable = new TextTable(doctorColumn, doctorRows.toArray(new String[0][0]));
+				doctorTable.printTable();
+				doctorRows.clear();
+				break;
+			case 2:
+				System.out.println("\nPatient Details");
+				ArrayList<String[]> patientrows = new ArrayList<String[]>();
+				String[] patientColumn = { "Name", "Email", "Age" };
+
+				for (int j = 0; j < patients.size(); j++) {
+
+					String[] temp = { patients.get(j).getName(), patients.get(j).getEmail(),
+							Integer.toString(patients.get(j).getAge()) };
+					patientrows.add(temp);
+				}
+				TextTable patientTable = new TextTable(patientColumn, patientrows.toArray(new String[0][0]));
+				patientTable.printTable();
+				patientrows.clear();
+				break;
+			case 3:
+				System.out.println("\nAppointment Details");
+				String patientName = "";
+				String doctorName = "";
+				String consultationName = "";
+				ArrayList<String[]> appointmentrows = new ArrayList<String[]>();
+
+				String[] appointmentColumn = { "SlotTime", "Consultation", "Doctor", "Patient", "Appointment Cost" };
+
+				for (int j = 0; j < appointments.size(); j++) {
+
+					for (Patient p : patients) {
+						System.out.println(appointments.get(j).getPatientID());
+						if (p.getId().equals(appointments.get(j).getPatientID())) {
+
+							patientName = p.getName() + ", " + p.getEmail();
+						}
+					}
+					for (Doctor d : doctors) {
+						if (d.getId().equals(appointments.get(j).getDoctorID())) {
+							doctorName = d.getName();
+						}
+					}
+					for (Consultation c : consultations) {
+						if (c.getId().equals(appointments.get(j).getConsultationID())) {
+							consultationName = c.getName();
+						}
+					}
+					String[] temp = { appointments.get(j).getSlotTime(), consultationName, doctorName, patientName, appointments.get(j).getAppointmentCost() };
+					appointmentrows.add(temp);
+				}
+				TextTable appointmentTable = new TextTable(appointmentColumn,
+						appointmentrows.toArray(new String[0][0]));
+
+				appointmentTable.printTable();
+				appointmentrows.clear();
+
+				break;
+			case 4:
+				return;
+			}
+		} while (choice >= 1 || choice <= 4);
 
 	}
 

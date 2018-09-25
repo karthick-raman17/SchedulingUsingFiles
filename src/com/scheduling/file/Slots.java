@@ -2,9 +2,13 @@ package com.scheduling.file;
 
 import java.util.ArrayList;
 
-class Slots implements java.io.Serializable {
+class Slot implements java.io.Serializable {
 
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -749319611753905325L;
 	ArrayList<Boolean> slots = new ArrayList<>();
 	ArrayList<String> slotsInString = new ArrayList<>();
 	int startHour;
@@ -13,7 +17,7 @@ class Slots implements java.io.Serializable {
 	String doctorID;
 	int slotSize;
 
-	public Slots(String doctorID, int startHour, int endHour, int slotSizeInmin) {
+	public Slot(String doctorID, int startHour, int endHour, int slotSizeInmin) {
 		if ((endHour - startHour) > 24) {
 			return;
 		}

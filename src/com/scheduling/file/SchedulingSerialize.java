@@ -6,17 +6,19 @@ import java.util.LinkedList;
 
 public interface SchedulingSerialize {
 
-	void staffSerialize(LinkedList<Doctor> doctorList);
+	void doctorSerialize(LinkedList<Doctor> doctorList);
+	
+	LinkedList<Doctor> doctorDeserialize();
 
-	void patientSerialize(Patient patient);
+	void patientSerialize(LinkedList<Patient> patientList);
 
 	LinkedList<Patient> patientDeserialize();
 
-	void slotSerialize(String doctorID, ArrayList<String> slot);
+	void doctorSlotSerialize(HashMap<String, ArrayList<String>> doctorSlotList);
 
-	HashMap<String, ArrayList<String>> slotDeserialize();
+	HashMap<String, ArrayList<String>> doctorSlotDeserialize();
 
-	void appointmentSerialize(Appointment appt);
+	void appointmentSerialize(LinkedList<Appointment> appointmentList);
 
 	LinkedList<Appointment> appointmentDeserialize();
 }
