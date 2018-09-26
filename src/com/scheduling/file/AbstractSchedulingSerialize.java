@@ -152,7 +152,7 @@ public class AbstractSchedulingSerialize implements SchedulingSerialize {
 	}
 
 	public void patientSerialize(LinkedList<Patient> patientList) {
-
+		patientSerializeObject.clear();
 		try {
 
 			FileOutputStream file = new FileOutputStream(patientFilePath,false);
@@ -178,6 +178,7 @@ public class AbstractSchedulingSerialize implements SchedulingSerialize {
 	public LinkedList<Patient> patientDeserialize() {
 		try {
 			patientDeserializeObject.clear();
+			
 			FileInputStream file = new FileInputStream(patientFilePath);
 
 			ObjectInputStream out = new ObjectInputStream(file);

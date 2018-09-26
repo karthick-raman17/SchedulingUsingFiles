@@ -28,6 +28,10 @@ class Appointment implements java.io.Serializable {
 		this.appointmentCost = appointmentCost;
 	}
 
+	public String getApptointmentID() {
+		return apptointmentID;
+	}
+
 	public String getAppointmentCost() {
 		return appointmentCost;
 	}
